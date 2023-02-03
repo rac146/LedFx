@@ -10,9 +10,9 @@ from ledfx.effects.gradient import GradientEffect
 _LOGGER = logging.getLogger(__name__)
 
 
-class Strobe1(AudioReactiveEffect, GradientEffect):
+class BPMStrobe(AudioReactiveEffect, GradientEffect):
 
-    NAME = "BPM Strobe NEW 1"
+    NAME = "BPM Strobe NEW"
     CATEGORY = "BPM"
 
     CONFIG_SCHEMA = vol.Schema(
