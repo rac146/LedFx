@@ -251,6 +251,8 @@ class LedFxCore:
             parse_gradient,
         )
 
+        self.integrations.create_from_config(self.config["integrations"])
+
         # TODO: Deferr
         self.devices.create_from_config(self.config["devices"])
         await self.devices.async_initialize_devices()
@@ -262,7 +264,6 @@ class LedFxCore:
         #     await self.devices.set_wleds_sync_mode(sync_mode)
 
         self.virtuals.create_from_config(self.config["virtuals"])
-        self.integrations.create_from_config(self.config["integrations"])
 
         if self.config["scan_on_startup"]:
             async_fire_and_forget(self.devices.find_wled_devices(), self.loop)
