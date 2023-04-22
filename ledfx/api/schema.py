@@ -13,7 +13,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class SchemaEndpoint(RestEndpoint):
-
     ENDPOINT_PATH = "/api/schema"
 
     VALID_SCHEMAS = {
@@ -84,6 +83,19 @@ class SchemaEndpoint(RestEndpoint):
                         "name": effect.NAME,
                         "category": effect.CATEGORY,
                     }
+
+                    if effect.HIDDEN_KEYS:
+                        response["effects"][effect_type][
+                            "hidden_keys"
+                        ] = effect.HIDDEN_KEYS
+                    if effect.ADVANCED_KEYS:
+                        response["effects"][effect_type][
+                            "advanced_keys"
+                        ] = effect.ADVANCED_KEYS
+                    if effect.PERMITTED_KEYS:
+                        response["effects"][effect_type][
+                            "permitted_keys"
+                        ] = effect.PERMITTED_KEYS
 
             elif schema == "integrations":
                 # Generate all the integrations schema

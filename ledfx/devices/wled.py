@@ -31,6 +31,16 @@ class WLEDDevice(NetworkedDevice):
                 description="Time between LedFx effect off and WLED effect activate",
                 default=1,
             ): vol.All(int, vol.Range(0, 255)),
+            vol.Optional(
+                "create_segments",
+                description="Import WLED segments into LedFx",
+                default=False,
+            ): bool,
+            vol.Optional(
+                "icon_name",
+                description="Icon for the device*",
+                default="wled",
+            ): str,
         }
     )
 
@@ -58,6 +68,7 @@ class WLEDDevice(NetworkedDevice):
             },
             "DDP": {
                 "name": None,
+                "port": 4048,
                 "ip_address": None,
                 "pixel_count": None,
             },
@@ -93,7 +104,6 @@ class WLEDDevice(NetworkedDevice):
         self.subdevice._destination = self._destination
 
     def activate(self):
-
         if self.subdevice is None:
             self.setup_subdevice()
         self.subdevice.activate()
@@ -106,6 +116,28 @@ class WLEDDevice(NetworkedDevice):
 
     def flush(self, data):
         self.subdevice.flush(data)
+
+    async def add_postamble(self):
+        _LOGGER.debug("Doing post creation things for WLED...")
+        if (
+            self.config["create_segments"]
+            or self._ledfx.config["create_segments"]
+        ):
+            segments = await self.wled.get_segments()
+            isMatrix = segments[0].get("stopY", 0) > 0
+            if len(segments) > 1 or isMatrix:
+                for seg in segments:
+                    if seg["stop"] - seg["start"] > 0:
+                        name = seg.get("n", f'Seg-{seg["id"]}')
+                        if seg.get("stopY", 0) > 0:
+                            name = seg.get("n", f'Matrix-{seg["id"]}')
+                        rows = seg.get("stopY", 1)
+                        self.sub_v(
+                            name,
+                            "wled",
+                            [[seg["start"], seg["stop"] - 1]],
+                            rows,
+                        )
 
     async def async_initialize(self):
         await super().async_initialize()
