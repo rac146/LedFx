@@ -15,7 +15,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class DummyEffect:
-
     config = vol.Schema({})
     _active = True
     is_active = _active
@@ -92,6 +91,8 @@ def _gaussian_kernel1d(sigma, order, array_len):
     # Choose a radius for the filter kernel large enough to include all significant elements. Using
     # a radius of 4 standard deviations (rounded to int) will only truncate tail values that are of
     # the order of 1e-5 or smaller. For very small sigma values, just use a minimal radius.
+    # trapping very small values of sigma to arbitarily 0.00001 to preven div zero crash
+    sigma = max(0.00001, sigma)
     radius = max(1, int(round(4.0 * sigma)))
     radius = min(int((array_len - 1) / 2), radius)
     radius = max(radius, 1)
@@ -197,6 +198,13 @@ class Effect(BaseRegistry):
     """
 
     NAME = ""
+    # over ride in effect children to hide existing keys from UI
+    HIDDEN_KEYS = None
+    # over ride in effect children AND add an "advanced" bool to schema
+    # to show or hide in UI
+    ADVANCED_KEYS = None
+    # over ride in effect children to allow edit and show others
+    PERMITTED_KEYS = None
     _config = None
     _active = False
     _virtual = None
@@ -274,7 +282,6 @@ class Effect(BaseRegistry):
         prior_config = self._config
 
         if self._config != {}:
-
             self._config = {**prior_config, **config}
         else:
             self._config = validated_config
@@ -351,7 +358,9 @@ class Effect(BaseRegistry):
                 casting="unsafe",
             )
         # If the configured blur is greater than 0 we need to blur it
-        if self.configured_blur != 0.0:
+        # do not apply blur if we have 3 or less pixels as the matrix math
+        # demands it!
+        if self.configured_blur != 0.0 and self.pixel_count > 3:
             kernel = _gaussian_kernel1d(self.configured_blur, 0, len(pixels))
             pixels[:, 0] = np.convolve(pixels[:, 0], kernel, mode="same")
             pixels[:, 1] = np.convolve(pixels[:, 1], kernel, mode="same")

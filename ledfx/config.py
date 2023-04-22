@@ -80,7 +80,7 @@ CORE_CONFIG_SCHEMA = vol.Schema(
         vol.Optional("visualisation_fps", default=30): vol.All(
             int, vol.Range(1, 60)
         ),
-        vol.Optional("visualisation_maxlen", default=50): vol.All(
+        vol.Optional("visualisation_maxlen", default=81): vol.All(
             int, vol.Range(5, 300)
         ),
         vol.Optional(
@@ -91,6 +91,7 @@ CORE_CONFIG_SCHEMA = vol.Schema(
         vol.Optional("user_colors", default={}): dict,
         vol.Optional("user_gradients", default={}): dict,
         vol.Optional("scan_on_startup", default=False): bool,
+        vol.Optional("create_segments", default=False): bool,
         vol.Optional("wled_preferences", default={}): dict,
         vol.Optional(
             "configuration_version", default=CONFIGURATION_VERSION
@@ -193,7 +194,6 @@ def ensure_config_file(config_dir: str) -> str:
 
 
 def check_preset_file(config_dir: str) -> str:
-
     ensure_config_directory(config_dir)
     presets_path = get_preset_file(config_dir)
     if presets_path is None:
@@ -228,7 +228,6 @@ def load_config(config_dir: str) -> dict:
         f"Loading configuration file: {os.path.join(os.path.abspath(config_dir), CONFIG_FILE_NAME)}"
     )
     try:
-
         with open(config_file, encoding="utf-8") as file:
             config_json = json.load(file)
             try:
@@ -384,6 +383,7 @@ def migrate_config(old_config):
                     "config": new_effect_config,
                     "type": new_effect_id,
                 }
+            virtual["auto_generated"] = virtual.get("auto_generated", False)
         new_config["virtuals"] = virtuals
     else:  # time to make some virtuals
         from ledfx.utils import generate_id
@@ -406,6 +406,7 @@ def migrate_config(old_config):
                 {
                     "id": generate_id(name),
                     "is_device": device["id"],
+                    "auto_generated": False,
                     "config": virtual_config,
                     "segments": segments,
                 }

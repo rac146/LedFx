@@ -10,7 +10,7 @@ const {
   app,
   Menu,
   Tray,
-  //   Notification,
+  // Notification,
   nativeTheme,
   BrowserWindow,
   ipcMain,
@@ -83,11 +83,21 @@ function createWindow(args = {}) {
 // const NOTIFICATION_TITLE = 'LedFx Client - by Blade';
 // const NOTIFICATION_BODY = 'Testing Notification from the Main process';
 
-// function showNotification() {
+// // function showNotification(title = NOTIFICATION_TITLE, body = NOTIFICATION_BODY) {
+// function showNotification(title = NOTIFICATION_TITLE, body = NOTIFICATION_BODY) {
 //   new Notification({
-//     title: NOTIFICATION_TITLE,
-//     body: NOTIFICATION_BODY,
-//   }).show();
+//     toastXml: `<toast>
+//        <visual>
+//          <binding template="ToastText02">
+//            <text id="1">LedFx Update available</text>
+//            <text id="2">Click the button to see more informations.</text>
+//          </binding>
+//        </visual>
+//        <actions>
+//          <action content="Goto Release" activationType="protocol" arguments="https://github.com/YeonV/LedFx-Builds/releases/latest" />
+//        </actions>
+//     </toast>`,
+//  }).show();
 // }
 
 let tray = null;
@@ -118,7 +128,7 @@ const ready = () => (
 
     const integratedCore = (process.platform === 'darwin')
       ? fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx_core.app'))
-      : fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx-notray.exe'))
+      : fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx/LedFx.exe'))
 
     const currentDir = fs.readdirSync(thePath)
     console.log(currentDir)
@@ -127,7 +137,7 @@ const ready = () => (
       if (process.platform === 'darwin') {
         subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx_core.app/Contents/MacOS/LedFx_v2')}`, []);
       } else {
-        subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx-notray.exe')}`, ['-p', '8888']);
+        subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx/LedFx.exe')}`, ['-p', '8888', '--no-tray']);
       }
     }
 
@@ -153,14 +163,13 @@ const ready = () => (
       contextMenu = Menu.buildFromTemplate([
         { label: 'Show', click: () => {
           if (process.platform === 'darwin') app.dock.show()
-          wind.show()
-        }},
+          wind.show()        }},
         { label: 'Minimize', click: () => wind.minimize() },
         { label: 'Minimize to tray', click: () => {
           if (process.platform === 'darwin') app.dock.hide()
           wind.hide()
         }},
-        //   { label: 'Test Notifiation', click: () => showNotification() },
+        // { label: 'Test Notifiation', click: () => showNotification('Update Available', 'v2.0.62') },
         { label: 'seperator', type: 'separator' },
         { label: 'Dev', click: () => wind.webContents.openDevTools() },
         { label: 'seperator', type: 'separator' },
@@ -168,7 +177,7 @@ const ready = () => (
           label: 'Start core',
           click: () => (process.platform === 'darwin')
             ? subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx_core.app/Contents/MacOS/LedFx_v2')}`, [])
-            : subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx-notray.exe')}`, ['-p', '8888'])
+            : subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx/LedFx.exe')}`, ['-p', '8888', '--no-tray'])
         },
         {
           label: 'Stop core',
@@ -197,7 +206,7 @@ const ready = () => (
           if (process.platform === 'darwin') app.dock.hide()
           wind.hide()
         }},
-        //   { label: 'Test Notifiation', click: () => showNotification() },
+        // { label: 'Test Notifiation', click: () => showNotification('Update Available', 'v2.0.62') },
         { label: 'seperator', type: 'separator' },
         { label: 'Dev', click: () => wind.webContents.openDevTools() },
         { label: 'seperator', type: 'separator' },
@@ -235,8 +244,8 @@ const ready = () => (
             wind.webContents.send('fromMain', ['currentdir', integratedCore, fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx_core.app'))]);
             subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx_core.app/Contents/MacOS/LedFx_v2')}`, []);
           } else {
-            wind.webContents.send('fromMain', ['currentdir', integratedCore, fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx-notray.exe'))]);
-            subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx-notray.exe')}`, []);
+            wind.webContents.send('fromMain', ['currentdir', integratedCore, fs.existsSync(path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx/LedFx.exe'))]);
+            subpy = require('child_process').spawn(`${path.join(path.dirname(__dirname), isDev ? 'extraResources' : '../extraResources','LedFx/LedFx.exe')}`, []);
           }
         }
         return;
